@@ -59,13 +59,9 @@ def help_message(message):
                  'Разработчик сие бота: @PerryTheBalloon (Перри Балун)\n'
                  'Исходники кода предоставлены мистером @aswer_user (Дядя Эйден)', parse_mode='HTML')
 
-@bot.message_handler(commands=['test'])
-def help_message(message):
-    bot.reply_to(message, 'Ops<blockquote>You find a secret!</blockquote>', parse_mode='HTML')
-
 # ура, печеньки!
 
-#по команде
+# по команде
 
 @bot.message_handler(commands=['cookies']) 
 def cookie_message(message):
@@ -100,7 +96,6 @@ def cookie_message(message):
     print(' Updated user balance:', balance)
     if not user_id in USERS_BALANCE:
         USERS_BALANCE[user_id] = [0, '']
-        bot.reply_to(message, "TEST_NEWBIE_MESSAGE...")
     with open(DB_PATH, 'w') as f:
         json.dump(USERS_BALANCE, f) # записываем изменения в базу данных
     if (COOKIE_NUMBER == 0):
@@ -144,6 +139,28 @@ def cookie_message(message):
             if (ANSWER == 5):
                 bot.reply_to(message, f'Вкусное печенье с шоколадом в количестве ' + str(COOKIE_NUMBER) + f' печенек. \nТолько для тебя, {user_name} ^^')
 
+def get_cookies_stats():
+    user_balance = {}
+    user_balance = round(USERS_BALANCE[user_id][0])
+    for user_id, user_data in user_balance.items():
+        for balance in user_data["balance"]:
+            user_balance[user_id] = balance
+    return USERS_BALANCE
+
+
+@bot.message_handler(commands=['top'])
+def handle_top_cookie(message):
+    user_balance = get_cookies_stats()
+    # Сортируем пользователей по количеству сообщений
+    sorted_stats = sorted(user_balance.items(), key=lambda x: x[1], reverse=True)
+
+    # Формируем ответ
+    text = "TOP 10 COOKIE_USERS:\n"
+    for i, (user_id, count) in enumerate(sorted_stats[:10]):
+        text += f"{i+1}. USER {user_id}: {count} COOKIESS\n"
+
+    bot.send_message(message.chat.id, text)
+
     #balance                
 @bot.message_handler(commands=['bal'])
 def balance_message(message):
@@ -182,7 +199,7 @@ def cookie_message(message):
                 time_delta = datetime.now() - last_cookie_time
                 if time_delta.seconds < 1800:
                     bot.reply_to(message, f'{user_name}, ты уже ел печенье {time_delta.seconds//60} минут назад. \n'
-                                                    f'Новые печеньки будут готовы через {(30 - time_delta.seconds//60)} минут :3')
+                                                    f'Новые печеньки будут готовы через {(30 - time_delta.seconds//60)} минут <3') #Ня.
                     return
             except:
                 pass
@@ -238,5 +255,10 @@ def cookie_message(message):
                         bot.reply_to(message, f'{user_name}, вот тебе ' + str(COOKIE_NUMBER) + ' печенья с топленым молоком =3 \nНадеюсь вкусно? ^^')
                     if (ANSWER == 5):
                         bot.reply_to(message, f'Вкусное печенье с шоколадом в количестве ' + str(COOKIE_NUMBER) + f' печенек. \nТолько для тебя, {user_name} ^^')
+
+def new_chat_member(update):
+    for member in update.message.new_chat_members:
+        if member.id == '7159499048':
+            update.message.reply_text('TEXT_FIRST_MESSAGE')
 bot.polling(none_stop=True)
 print("\nShutting Down...")
